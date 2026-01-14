@@ -17,8 +17,13 @@ impl HashToCurve for Sha256 {
                 // Convert hash to a Ubig for Bigint operations
                 let hash_ubig = UBig::from_be_bytes(&hash) % &MODULUS;
 
+                let hash_bytes = hash_ubig.to_be_bytes();
+                let mut padded_bytes = [0u8; 32];
+                let start = 32usize.saturating_sub(hash_bytes.len());
+                padded_bytes[start..].copy_from_slice(&hash_bytes);
+
                 // Decompress the point
-                match alt_bn128_g1_decompress(&hash_ubig.to_be_bytes()) {
+                match alt_bn128_g1_decompress(&padded_bytes) {
                     Ok(p) => Some(G1Point(p)),
                     Err(_) => None,
                 }

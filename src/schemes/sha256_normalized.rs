@@ -37,8 +37,13 @@ impl HashToCurve for Sha256Normalized {
 
                 let modulus_ubig = hash_ubig % &MODULUS;
 
+                let modulus_bytes = modulus_ubig.to_be_bytes();
+                let mut padded_bytes = [0u8; 32];
+                let start = 32usize.saturating_sub(modulus_bytes.len());
+                padded_bytes[start..].copy_from_slice(&modulus_bytes);
+
                 // Decompress the point
-                match alt_bn128_g1_decompress(&modulus_ubig.to_be_bytes()) {
+                match alt_bn128_g1_decompress(&padded_bytes) {
                     Ok(p) => Some(G1Point(p)),
                     Err(_) => None,
                 }
